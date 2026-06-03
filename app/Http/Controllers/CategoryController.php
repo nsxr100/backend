@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Category;
+use Illuminate\Http\JsonResponse;
+
+class CategoryController extends Controller
+{
+    /**
+     * Get all categories with their menu items.
+     */
+    public function index(): JsonResponse
+    {
+        $categories = Category::with('menuItems.variants')
+            ->orderBy('order')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories,
+        ]);
+    }
+
+    /**
+     * Get a specific category with its menu items.
+     */
+    public function show(Category $category): JsonResponse
+    {
+        $category->load('menuItems.variants');
+
+        return response()->json([
+            'success' => true,
+            'data' => $category,
+        ]);
+    }
+
+    /**
+     * Create a new category.
+     */
+    public function store(): JsonResponse
+    {
+        $validated = request()->validate([
+            'name' => 'required|unique:categories|string',
+            'slug' => 'required|unique:categories|string',
+            'description' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+
+        $category = Category::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category created successfully',
+            'data' => $category,
+        ], 201);
+    }
+
+    /**
+     * Update a category.
+     */
+    public function update(Category $category): JsonResponse
+    {
+        $validated = request()->validate([
+            'name' => 'required|unique:categories,name,' . $category->id . '|string',
+            'slug' => 'required|unique:categories,slug,' . $category->id . '|string',
+            'description' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+
+        $category->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category updated successfully',
+            'data' => $category,
+        ]);
+    }
+
+    /**
+     * Delete a category.
+     */
+    public function destroy(Category $category): JsonResponse
+    {
+        $category->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category deleted successfully',
+        ]);
+    }
+}
