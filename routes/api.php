@@ -67,11 +67,14 @@ Route::get('menu-image/{path}', function (string $path) {
 
         return response(base64_decode($data), 200)
             ->header('Content-Type', $match[1] ?? 'image/jpeg')
+            ->header('Access-Control-Allow-Origin', '*')
             ->header('Cache-Control', 'public, max-age=31536000');
     }
 
     if (Storage::disk('public')->exists($path)) {
-        return Storage::disk('public')->response($path);
+        return Storage::disk('public')->response($path)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Cache-Control', 'public, max-age=31536000');
     }
 
     abort(404);
@@ -85,5 +88,6 @@ Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
 
     return response(base64_decode($data), 200)
         ->header('Content-Type', $match[1] ?? 'image/jpeg')
+        ->header('Access-Control-Allow-Origin', '*')
         ->header('Cache-Control', 'public, max-age=31536000');
 });
