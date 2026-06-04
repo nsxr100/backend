@@ -33,6 +33,8 @@ class MenuItemForm
                 FileUpload::make('image_url')
                     ->label('Menu image')
                     ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(4096)
                     ->disk('public')
                     ->directory('menu-items')
                     ->visibility('public')

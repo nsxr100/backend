@@ -67,24 +67,33 @@ Route::get('menu-image/{path}', function (string $path) {
     if ($menuItem?->image_data_url && str_contains($menuItem->image_data_url, ',')) {
         [$meta, $data] = explode(',', $menuItem->image_data_url, 2);
         preg_match('/data:(.*);base64/', $meta, $match);
+        $bytes = base64_decode($data, true);
 
-        return response(base64_decode($data), 200)
-            ->header('Content-Type', $match[1] ?? 'image/jpeg')
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Cache-Control', 'public, max-age=31536000');
+        if ($bytes && getimagesizefromstring($bytes)) {
+            return response($bytes, 200)
+                ->header('Content-Type', $match[1] ?? 'image/jpeg')
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Cache-Control', 'public, max-age=31536000');
+        }
     }
 
     if (Storage::disk('public')->exists($path)) {
+        $bytes = Storage::disk('public')->get($path);
+        $info = getimagesizefromstring($bytes);
+
+        abort_unless($info, 404);
+
         if ($menuItem && ! $menuItem->image_data_url) {
-            $mime = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
-            $data = base64_encode(Storage::disk('public')->get($path));
+            $mime = $info['mime'] ?? Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+            $data = base64_encode($bytes);
 
             $menuItem->forceFill([
                 'image_data_url' => "data:{$mime};base64,{$data}",
             ])->saveQuietly();
         }
 
-        return Storage::disk('public')->response($path)
+        return response($bytes, 200)
+            ->header('Content-Type', $info['mime'] ?? 'image/jpeg')
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Cache-Control', 'public, max-age=31536000');
     }
@@ -94,8 +103,13 @@ Route::get('menu-image/{path}', function (string $path) {
 
 Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
     if (! $menuItem->image_data_url && $menuItem->image_url && Storage::disk('public')->exists($menuItem->image_url)) {
-        $mime = Storage::disk('public')->mimeType($menuItem->image_url) ?: 'image/jpeg';
-        $data = base64_encode(Storage::disk('public')->get($menuItem->image_url));
+        $bytes = Storage::disk('public')->get($menuItem->image_url);
+        $info = getimagesizefromstring($bytes);
+
+        abort_unless($info, 404);
+
+        $mime = $info['mime'] ?? Storage::disk('public')->mimeType($menuItem->image_url) ?: 'image/jpeg';
+        $data = base64_encode($bytes);
 
         $menuItem->forceFill([
             'image_data_url' => "data:{$mime};base64,{$data}",
@@ -106,8 +120,11 @@ Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
 
     [$meta, $data] = explode(',', $menuItem->image_data_url, 2);
     preg_match('/data:(.*);base64/', $meta, $match);
+    $bytes = base64_decode($data, true);
 
-    return response(base64_decode($data), 200)
+    abort_unless($bytes && getimagesizefromstring($bytes), 404);
+
+    return response($bytes, 200)
         ->header('Content-Type', $match[1] ?? 'image/jpeg')
         ->header('Access-Control-Allow-Origin', '*')
         ->header('Cache-Control', 'public, max-age=31536000');
