@@ -6,6 +6,7 @@ use App\Http\Controllers\MenuVariantController;
 use App\Http\Controllers\OrderController;
 use App\Models\Category;
 use App\Models\MenuItem;
+use App\Models\MenuVariant;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,8 @@ Route::get('menu-version', function () {
             Category::max('updated_at'),
             MenuItem::count(),
             MenuItem::max('updated_at'),
+            MenuVariant::count(),
+            MenuVariant::max('updated_at'),
         ]),
     ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
 });

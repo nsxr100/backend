@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class MenuItem extends Model
 {
@@ -32,6 +33,30 @@ class MenuItem extends Model
     protected $hidden = [
         'image_data_url',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (MenuItem $menuItem): void {
+            if (! $menuItem->image_url) {
+                return;
+            }
+
+            if ($menuItem->image_data_url && ! $menuItem->wasChanged('image_url')) {
+                return;
+            }
+
+            if (! Storage::disk('public')->exists($menuItem->image_url)) {
+                return;
+            }
+
+            $mime = Storage::disk('public')->mimeType($menuItem->image_url) ?: 'image/jpeg';
+            $data = base64_encode(Storage::disk('public')->get($menuItem->image_url));
+
+            $menuItem->forceFill([
+                'image_data_url' => "data:{$mime};base64,{$data}",
+            ])->saveQuietly();
+        });
+    }
 
     /**
      * Get the category of the menu item.
