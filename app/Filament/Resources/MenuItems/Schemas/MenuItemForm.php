@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MenuItems\Schemas;
 
+use App\Support\MenuImageData;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -10,7 +11,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class MenuItemForm
@@ -41,15 +41,11 @@ class MenuItemForm
                     ->imageEditor()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, Set $set, FileUpload $component): ?string {
                         $path = $component->saveUploadedFile($file);
+                        $dataUrl = MenuImageData::fromPublicPath($path);
 
-                        if (! $path || ! Storage::disk('public')->exists($path)) {
-                            return $path;
+                        if ($dataUrl) {
+                            $set('image_data_url', $dataUrl);
                         }
-
-                        $mime = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
-                        $data = base64_encode(Storage::disk('public')->get($path));
-
-                        $set('image_data_url', "data:{$mime};base64,{$data}");
 
                         return $path;
                     })

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\MenuImageData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class MenuItem extends Model
 {
@@ -45,16 +45,13 @@ class MenuItem extends Model
                 return;
             }
 
-            if (! Storage::disk('public')->exists($menuItem->image_url)) {
-                return;
+            $dataUrl = MenuImageData::fromPublicPath($menuItem->image_url);
+
+            if ($dataUrl) {
+                $menuItem->forceFill([
+                    'image_data_url' => $dataUrl,
+                ])->saveQuietly();
             }
-
-            $mime = Storage::disk('public')->mimeType($menuItem->image_url) ?: 'image/jpeg';
-            $data = base64_encode(Storage::disk('public')->get($menuItem->image_url));
-
-            $menuItem->forceFill([
-                'image_data_url' => "data:{$mime};base64,{$data}",
-            ])->saveQuietly();
         });
     }
 
