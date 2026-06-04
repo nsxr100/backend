@@ -98,10 +98,11 @@ class CategoryController extends Controller
         foreach ($categories as $category) {
             foreach ($category->menuItems as $item) {
                 $version = $item->updated_at?->timestamp ?? time();
+                $base = str_replace('http://backend-production-6121.up.railway.app', 'https://backend-production-6121.up.railway.app', request()->getSchemeAndHttpHost());
                 $item->image_full_url = $item->image_data_url
-                    ? request()->getSchemeAndHttpHost() . '/api/menu-image-data/' . $item->id . '?v=' . $version
+                    ? $base . '/api/menu-image-data/' . $item->id . '?v=' . $version
                     : ($item->image_url
-                        ? request()->getSchemeAndHttpHost() . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/') . '?v=' . $version
+                        ? $base . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/') . '?v=' . $version
                         : null);
             }
         }
