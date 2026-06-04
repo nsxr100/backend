@@ -4,8 +4,21 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuVariantController;
 use App\Http\Controllers\OrderController;
+use App\Models\Category;
+use App\Models\MenuItem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
+
+Route::get('menu-version', function () {
+    return response()->json([
+        'version' => implode('|', [
+            Category::count(),
+            Category::max('updated_at'),
+            MenuItem::count(),
+            MenuItem::max('updated_at'),
+        ]),
+    ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+});
 
 // Category routes
 Route::prefix('categories')->group(function () {
@@ -50,3 +63,14 @@ Route::get('menu-image/{path}', function (string $path) {
 
     return Storage::disk('public')->response($path);
 })->where('path', '.*');
+
+Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
+    abort_unless($menuItem->image_data_url && str_contains($menuItem->image_data_url, ','), 404);
+
+    [$meta, $data] = explode(',', $menuItem->image_data_url, 2);
+    preg_match('/data:(.*);base64/', $meta, $match);
+
+    return response(base64_decode($data), 200)
+        ->header('Content-Type', $match[1] ?? 'image/jpeg')
+        ->header('Cache-Control', 'public, max-age=31536000');
+});

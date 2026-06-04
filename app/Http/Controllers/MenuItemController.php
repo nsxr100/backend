@@ -149,9 +149,12 @@ class MenuItemController extends Controller
     private function attachImageUrls($menuItems): void
     {
         foreach ($menuItems as $item) {
-            $item->image_full_url = $item->image_url
-                ? request()->getSchemeAndHttpHost() . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/')
-                : null;
+            $version = $item->updated_at?->timestamp ?? time();
+            $item->image_full_url = $item->image_data_url
+                ? request()->getSchemeAndHttpHost() . '/api/menu-image-data/' . $item->id . '?v=' . $version
+                : ($item->image_url
+                    ? request()->getSchemeAndHttpHost() . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/') . '?v=' . $version
+                    : null);
         }
     }
 

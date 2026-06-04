@@ -29,6 +29,10 @@ class MenuItem extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $hidden = [
+        'image_data_url',
+    ];
+
     /**
      * Get the category of the menu item.
      */
