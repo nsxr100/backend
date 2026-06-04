@@ -75,6 +75,15 @@ Route::get('menu-image/{path}', function (string $path) {
     }
 
     if (Storage::disk('public')->exists($path)) {
+        if ($menuItem && ! $menuItem->image_data_url) {
+            $mime = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+            $data = base64_encode(Storage::disk('public')->get($path));
+
+            $menuItem->forceFill([
+                'image_data_url' => "data:{$mime};base64,{$data}",
+            ])->saveQuietly();
+        }
+
         return Storage::disk('public')->response($path)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Cache-Control', 'public, max-age=31536000');
