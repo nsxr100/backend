@@ -17,6 +17,7 @@ class MenuItem extends Model
         'description',
         'base_price',
         'image_url',
+        'image_data_url',
         'order',
         'is_active',
     ];
