@@ -13,6 +13,7 @@ class MenuItemController extends Controller
     public function index(): JsonResponse
     {
         $menuItems = MenuItem::with('category', 'variants')
+            ->select('id', 'category_id', 'name', 'description', 'base_price', 'image_url', 'order', 'is_active', 'created_at', 'updated_at')
             ->where('is_active', true)
             ->orderBy('order')
             ->get();
@@ -30,6 +31,7 @@ class MenuItemController extends Controller
      */
     public function show(MenuItem $menuItem): JsonResponse
     {
+        $menuItem->makeHidden('image_data_url');
         $menuItem->load('category', 'variants');
         $this->attachImageUrls(collect([$menuItem]));
 
@@ -112,6 +114,7 @@ class MenuItemController extends Controller
     public function byCategory(int $categoryId): JsonResponse
     {
         $menuItems = MenuItem::where('category_id', $categoryId)
+            ->select('id', 'category_id', 'name', 'description', 'base_price', 'image_url', 'order', 'is_active', 'created_at', 'updated_at')
             ->where('is_active', true)
             ->with('variants')
             ->orderBy('order')
@@ -133,6 +136,7 @@ class MenuItemController extends Controller
         $query = request()->query('q');
 
         $menuItems = MenuItem::where('name', 'like', "%{$query}%")
+            ->select('id', 'category_id', 'name', 'description', 'base_price', 'image_url', 'order', 'is_active', 'created_at', 'updated_at')
             ->where('is_active', true)
             ->with('category', 'variants')
             ->orderBy('order')
@@ -151,11 +155,9 @@ class MenuItemController extends Controller
         foreach ($menuItems as $item) {
             $version = $item->updated_at?->timestamp ?? time();
             $base = str_replace('http://backend-production-6121.up.railway.app', 'https://backend-production-6121.up.railway.app', request()->getSchemeAndHttpHost());
-            $item->image_full_url = $item->image_data_url
+            $item->image_full_url = $item->image_url
                 ? $base . '/api/menu-image-data/' . $item->id . '?v=' . $version
-                : ($item->image_url
-                    ? $base . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/') . '?v=' . $version
-                    : null);
+                : null;
         }
     }
 

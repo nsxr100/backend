@@ -12,7 +12,10 @@ class CategoryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $categories = Category::with('menuItems.variants')
+        $categories = Category::with([
+                'menuItems' => fn ($query) => $query->select('id', 'category_id', 'name', 'description', 'base_price', 'image_url', 'order', 'is_active', 'created_at', 'updated_at'),
+                'menuItems.variants',
+            ])
             ->orderBy('order')
             ->get();
 
@@ -29,7 +32,10 @@ class CategoryController extends Controller
      */
     public function show(Category $category): JsonResponse
     {
-        $category->load('menuItems.variants');
+        $category->load([
+            'menuItems' => fn ($query) => $query->select('id', 'category_id', 'name', 'description', 'base_price', 'image_url', 'order', 'is_active', 'created_at', 'updated_at'),
+            'menuItems.variants',
+        ]);
         $this->attachMenuImageUrls(collect([$category]));
 
         return response()->json([
@@ -99,11 +105,9 @@ class CategoryController extends Controller
             foreach ($category->menuItems as $item) {
                 $version = $item->updated_at?->timestamp ?? time();
                 $base = str_replace('http://backend-production-6121.up.railway.app', 'https://backend-production-6121.up.railway.app', request()->getSchemeAndHttpHost());
-                $item->image_full_url = $item->image_data_url
+                $item->image_full_url = $item->image_url
                     ? $base . '/api/menu-image-data/' . $item->id . '?v=' . $version
-                    : ($item->image_url
-                        ? $base . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/') . '?v=' . $version
-                        : null);
+                    : null;
             }
         }
     }
