@@ -59,9 +59,22 @@ Route::prefix('orders')->group(function () {
 });
 
 Route::get('menu-image/{path}', function (string $path) {
-    abort_unless(Storage::disk('public')->exists($path), 404);
+    $menuItem = MenuItem::where('image_url', $path)->first();
 
-    return Storage::disk('public')->response($path);
+    if ($menuItem?->image_data_url && str_contains($menuItem->image_data_url, ',')) {
+        [$meta, $data] = explode(',', $menuItem->image_data_url, 2);
+        preg_match('/data:(.*);base64/', $meta, $match);
+
+        return response(base64_decode($data), 200)
+            ->header('Content-Type', $match[1] ?? 'image/jpeg')
+            ->header('Cache-Control', 'public, max-age=31536000');
+    }
+
+    if (Storage::disk('public')->exists($path)) {
+        return Storage::disk('public')->response($path);
+    }
+
+    abort(404);
 })->where('path', '.*');
 
 Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
