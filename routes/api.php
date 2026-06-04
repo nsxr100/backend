@@ -93,6 +93,15 @@ Route::get('menu-image/{path}', function (string $path) {
 })->where('path', '.*');
 
 Route::get('menu-image-data/{menuItem}', function (MenuItem $menuItem) {
+    if (! $menuItem->image_data_url && $menuItem->image_url && Storage::disk('public')->exists($menuItem->image_url)) {
+        $mime = Storage::disk('public')->mimeType($menuItem->image_url) ?: 'image/jpeg';
+        $data = base64_encode(Storage::disk('public')->get($menuItem->image_url));
+
+        $menuItem->forceFill([
+            'image_data_url' => "data:{$mime};base64,{$data}",
+        ])->saveQuietly();
+    }
+
     abort_unless($menuItem->image_data_url && str_contains($menuItem->image_data_url, ','), 404);
 
     [$meta, $data] = explode(',', $menuItem->image_data_url, 2);
