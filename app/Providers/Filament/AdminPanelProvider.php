@@ -24,8 +24,21 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName('Mang Inasal Kiosk')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => [
+                    50 => '#e7f6ec',
+                    100 => '#c6ead2',
+                    200 => '#92d8aa',
+                    300 => '#5ec582',
+                    400 => '#2fb25f',
+                    500 => '#009637',
+                    600 => '#008531',
+                    700 => '#006b2e',
+                    800 => '#005424',
+                    900 => '#003d1a',
+                    950 => '#002d13',
+                ],
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

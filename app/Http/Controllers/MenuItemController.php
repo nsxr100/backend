@@ -46,6 +46,7 @@ class MenuItemController extends Controller
             'name' => 'required|string',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
+            'image_url' => 'nullable|string',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
@@ -70,6 +71,7 @@ class MenuItemController extends Controller
             'name' => 'required|string',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
+            'image_url' => 'nullable|string',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
