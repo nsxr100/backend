@@ -17,6 +17,8 @@ class MenuItemController extends Controller
             ->orderBy('order')
             ->get();
 
+        $this->attachImageUrls($menuItems);
+
         return response()->json([
             'success' => true,
             'data' => $menuItems,
@@ -29,6 +31,7 @@ class MenuItemController extends Controller
     public function show(MenuItem $menuItem): JsonResponse
     {
         $menuItem->load('category', 'variants');
+        $this->attachImageUrls(collect([$menuItem]));
 
         return response()->json([
             'success' => true,
@@ -53,6 +56,7 @@ class MenuItemController extends Controller
 
         $menuItem = MenuItem::create($validated);
         $menuItem->load('category', 'variants');
+        $this->attachImageUrls(collect([$menuItem]));
 
         return response()->json([
             'success' => true,
@@ -78,6 +82,7 @@ class MenuItemController extends Controller
 
         $menuItem->update($validated);
         $menuItem->load('category', 'variants');
+        $this->attachImageUrls(collect([$menuItem]));
 
         return response()->json([
             'success' => true,
@@ -110,6 +115,8 @@ class MenuItemController extends Controller
             ->orderBy('order')
             ->get();
 
+        $this->attachImageUrls($menuItems);
+
         return response()->json([
             'success' => true,
             'data' => $menuItems,
@@ -129,11 +136,21 @@ class MenuItemController extends Controller
             ->orderBy('order')
             ->get();
 
+        $this->attachImageUrls($menuItems);
+
         return response()->json([
             'success' => true,
             'data' => $menuItems,
         ]);
     }
     
+    private function attachImageUrls($menuItems): void
+    {
+        foreach ($menuItems as $item) {
+            $item->image_full_url = $item->image_url
+                ? request()->getSchemeAndHttpHost() . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/')
+                : null;
+        }
+    }
 
 }

@@ -16,6 +16,8 @@ class CategoryController extends Controller
             ->orderBy('order')
             ->get();
 
+        $this->attachMenuImageUrls($categories);
+
         return response()->json([
             'success' => true,
             'data' => $categories,
@@ -28,6 +30,7 @@ class CategoryController extends Controller
     public function show(Category $category): JsonResponse
     {
         $category->load('menuItems.variants');
+        $this->attachMenuImageUrls(collect([$category]));
 
         return response()->json([
             'success' => true,
@@ -88,5 +91,16 @@ class CategoryController extends Controller
             'success' => true,
             'message' => 'Category deleted successfully',
         ]);
+    }
+
+    private function attachMenuImageUrls($categories): void
+    {
+        foreach ($categories as $category) {
+            foreach ($category->menuItems as $item) {
+                $item->image_full_url = $item->image_url
+                    ? request()->getSchemeAndHttpHost() . '/api/menu-image/' . collect(explode('/', ltrim($item->image_url, '/')))->map(fn ($part) => rawurlencode($part))->implode('/')
+                    : null;
+            }
+        }
     }
 }

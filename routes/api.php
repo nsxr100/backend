@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuVariantController;
 use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 
 // Category routes
@@ -43,3 +44,9 @@ Route::prefix('orders')->group(function () {
     Route::post('{order}/pay', [OrderController::class, 'pay']);
     Route::patch('{order}/status', [OrderController::class, 'updateStatus']);
 });
+
+Route::get('menu-image/{path}', function (string $path) {
+    abort_unless(Storage::disk('public')->exists($path), 404);
+
+    return Storage::disk('public')->response($path);
+})->where('path', '.*');
