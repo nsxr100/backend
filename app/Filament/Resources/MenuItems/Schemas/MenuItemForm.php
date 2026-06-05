@@ -23,10 +23,12 @@ class MenuItemForm
                     ->relationship('category', 'name')
                     ->required(),
                 TextInput::make('name')
+                    ->autocomplete(false)
                     ->required(),
                 Textarea::make('description')
                     ->columnSpanFull(),
                 TextInput::make('base_price')
+                    ->autocomplete(false)
                     ->required()
                     ->numeric()
                     ->prefix('₱'),

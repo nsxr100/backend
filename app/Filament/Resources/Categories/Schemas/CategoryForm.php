@@ -13,15 +13,14 @@ class CategoryForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->autocomplete(false)
                     ->required(),
                 TextInput::make('slug')
+                    ->autocomplete(false)
                     ->required(),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                TextInput::make('order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
+                
             ]);
     }
 }

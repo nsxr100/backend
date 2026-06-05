@@ -29,7 +29,6 @@ class Order extends Model
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_at' => 'datetime',
-        'completed_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
 

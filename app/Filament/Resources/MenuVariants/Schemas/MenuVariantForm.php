@@ -18,17 +18,15 @@ class MenuVariantForm
                     ->relationship('menuItem', 'name')
                     ->required(),
                 TextInput::make('name')
+                    ->autocomplete(false)
                     ->required(),
                 Textarea::make('description')
                     ->columnSpanFull(),
                 TextInput::make('price')
+                    ->autocomplete(false)
                     ->required()
                     ->numeric()
                     ->prefix('$'),
-                TextInput::make('order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
                 Toggle::make('is_active')
                     ->required(),
             ]);
